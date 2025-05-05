@@ -1,28 +1,61 @@
-// Firebase Configuration and Setup
+// Firebase Configuration and Setup - Secure Version
 
-// Firebase configuration object
-// Replace these values with your actual Firebase project config
+// Get Firebase config from environment variables
+// In production, these are set in Vercel
+// For local development, create a .env file (add to .gitignore!)
 const firebaseConfig = {
-  apiKey: "AIzaSyBxROGMAGcC8fPq656sgMpE8FYvDgKp7Nk",
-  authDomain: "write-stories-c72f9.firebaseapp.com",
-  projectId: "write-stories-c72f9",
-  storageBucket: "write-stories-c72f9.firebasestorage.app",
-  messagingSenderId: "175374872570",
-  appId: "1:175374872570:web:42e780a1ce1f73e2047e43",
-  measurementId: "G-QP2FKQEWM2"
+    apiKey: process.env.FIREBASE_API_KEY || "",
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
+    projectId: process.env.FIREBASE_PROJECT_ID || "",
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: process.env.FIREBASE_APP_ID || ""
 };
+
+// Set to true to force using localStorage instead of Firebase
+// Set this to true if you're having issues with Firebase
+const forceLocalStorage = false;
+
+// If any config values are missing, default to localStorage
+const isConfigValid = Object.values(firebaseConfig).every(value => value !== "");
+if (!isConfigValid) {
+    console.warn("Firebase config is incomplete, using localStorage fallback");
+    forceLocalStorage = true;
+}
 
 // Initialize Firebase
 let db;
 
 try {
+    console.log("Initializing Firebase...");
+    
+    // Check if we should use localStorage fallback
+    if (forceLocalStorage) {
+        throw new Error("Using localStorage mode");
+    }
+    
+    // Check if Firebase SDK is available
+    if (typeof firebase === 'undefined') {
+        throw new Error("Firebase SDK not loaded");
+    }
+    
     // Initialize Firebase app
-    firebase.initializeApp(firebaseConfig);
+    if (firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig);
+    }
     
     // Initialize Firestore
     db = firebase.firestore();
     
     console.log("Firebase initialized successfully");
+    
+    // Test the connection
+    testFirebaseConnection().then(isConnected => {
+        if (!isConnected) {
+            console.warn("Firebase connection test failed, using localStorage fallback");
+            db = createLocalStorageDb();
+        }
+    });
 } catch (error) {
     console.error("Error initializing Firebase:", error);
     
@@ -86,20 +119,16 @@ function createLocalStorageDb() {
     };
 }
 
-// Add a simple error handler for Firebase operations
-function handleFirebaseError(operation, error) {
-    console.error(`Firebase ${operation} error:`, error);
-    
-    // Display user-friendly error message
-    if (typeof showError === 'function') {
-        showError("There was a problem connecting to the database. Your data will be saved locally.");
-    }
-}
-
 // Function to test Firebase connection
 function testFirebaseConnection() {
     return new Promise((resolve, reject) => {
         try {
+            // Set a short timeout to fail fast if Firebase isn't responding
+            const timeoutId = setTimeout(() => {
+                console.warn("Firebase connection test timed out");
+                resolve(false);
+            }, 5000); // 5 second timeout
+            
             const testDoc = db.collection('test').doc('connection_test');
             
             testDoc.set({
@@ -107,10 +136,12 @@ function testFirebaseConnection() {
                 success: true
             })
             .then(() => {
+                clearTimeout(timeoutId);
                 console.log("Firebase connection test successful");
                 resolve(true);
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.warn("Firebase connection test failed:", error);
                 resolve(false);
             });
@@ -121,7 +152,5 @@ function testFirebaseConnection() {
     });
 }
 
-// Export a function to check if we're using the Firebase implementation or the fallback
-function isUsingFirebase() {
-    return typeof firebase !== 'undefined' && firebase.apps.length > 0;
-}
+// Add the fallback db to the window for access from script.js if needed
+window.createLocalStorageDb = createLocalStorageDb;
