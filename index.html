@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WritingLab</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <h1>WritingLab</h1>
+            <div class="word-counter">
+                <span id="word-count">0</span> words
+            </div>
+        </header>
+
+        <!-- Main writing area -->
+        <main>
+            <div class="writing-container">
+                <textarea id="writing-area" placeholder="Start writing your story here..."></textarea>
+            </div>
+
+            <!-- Dynamic rules section -->
+            <div class="rules-container">
+                <h2>Writing Prompts</h2>
+                <div id="rules-list">
+                    <!-- Rules will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Submission and follow-up section -->
+        <div class="submission-container">
+            <button id="submit-btn" class="primary-btn">Submit Story</button>
+            
+            <!-- Follow-up form (hidden initially) -->
+            <div id="follow-up-form" class="hidden">
+                <h2>Follow-up Questions</h2>
+                
+                <div class="form-group">
+                    <label>How did you feel about this writing experience?</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="emotionalResponse" value="Inspired"> Inspired</label>
+                        <label><input type="radio" name="emotionalResponse" value="Challenged"> Challenged</label>
+                        <label><input type="radio" name="emotionalResponse" value="Frustrated"> Frustrated</label>
+                        <label><input type="radio" name="emotionalResponse" value="Engaged"> Engaged</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Which rule was most influential in your writing?</label>
+                    <select id="influential-rule">
+                        <!-- Options will be populated based on the rules shown -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>What creative decisions did you make that surprised you?</label>
+                    <textarea id="creative-decisions"></textarea>
+                </div>
+                
+                <button id="submit-feedback-btn" class="primary-btn">Submit Feedback</button>
+            </div>
+            
+            <!-- Confirmation message (hidden initially) -->
+            <div id="confirmation-message" class="hidden">
+                <h2>Thank You!</h2>
+                <p>Your story and feedback have been submitted successfully.</p>
+                <button id="new-session-btn" class="secondary-btn">Start New Session</button>
+                <button id="export-json-btn" class="secondary-btn">Export Session Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="hidden">
+        <div class="loader"></div>
+        <p>Processing...</p>
+    </div>
+
+    <!-- Error message -->
+    <div id="error-message" class="hidden">
+        <p>Something went wrong. Please try again.</p>
+        <button id="dismiss-error-btn" class="secondary-btn">Dismiss</button>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="firebase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
