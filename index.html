@@ -86,8 +86,35 @@
     <!-- Error message -->
     <div id="error-message" class="hidden">
         <p>Something went wrong. Please try again.</p>
-        <button id="dismiss-error-btn" class="secondary-btn">Dismiss</button>
+        <button id="dismiss-error-btn" class="secondary-btn" onclick="dismissErrorDirectly()">Dismiss</button>
     </div>
+
+    <!-- Direct dismiss function defined early -->
+    <script>
+        function dismissErrorDirectly() {
+            console.log("Direct dismiss called from inline script");
+            try {
+                const errorElement = document.getElementById('error-message');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                    errorElement.classList.add('hidden');
+                    console.log("Error dismissed directly");
+                }
+            } catch (e) {
+                console.error("Error in direct dismissal:", e);
+                alert("Could not dismiss error. Please refresh the page.");
+            }
+        }
+        
+        // Hide loading indicator after timeout to prevent infinite loading
+        setTimeout(() => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+                console.warn("Force hiding loading indicator after timeout (HTML)");
+                loadingIndicator.classList.add('hidden');
+            }
+        }, 10000);
+    </script>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
