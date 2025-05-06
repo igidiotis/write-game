@@ -16,12 +16,18 @@ let lastKeyPressBuffer = "";
 let isSubmitting = false;
 let appInitialized = false;
 
-// ============== Initialization ==============
+// Hide loading indicator if it's showing at startup
 document.addEventListener('DOMContentLoaded', () => {
+    // Hide loading indicator if it's already visible
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+        loadingIndicator.classList.add('hidden');
+    }
+
     try {
         console.log("DOM loaded, initializing app...");
         // Delay initialization slightly to ensure Firebase has time to load
-        setTimeout(initializeApp, 100);
+        setTimeout(initializeApp, 300);
         
         // Add extra handler for dismiss error button
         const dismissBtn = document.getElementById('dismiss-error-btn');
@@ -34,6 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("There was a problem initializing the app. Please check console for details.");
     }
 });
+
+// Timeout to ensure loading indicator is hidden after 5 seconds
+// This prevents the app from being stuck in a "Processing..." state
+setTimeout(() => {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+        loadingIndicator.classList.add('hidden');
+        console.log("Force-hiding loading indicator after timeout (script.js)");
+    }
+}, 5000);
 
 // Direct error dismissal function that doesn't rely on event listeners
 function dismissErrorDirectly() {
@@ -89,11 +105,24 @@ function initializeApp() {
         
         // If there was an error message showing, dismiss it
         dismissError();
+        
+        // Hide loading indicator if it's still visible
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+            loadingIndicator.classList.add('hidden');
+            console.log("Hiding loading indicator after successful initialization");
+        }
     } catch (e) {
         console.error("Error initializing app:", e);
         // Show a more user-friendly error message
         const errorMsg = "The app couldn't initialize properly. Please refresh the page and try again.";
         showError(errorMsg);
+        
+        // Hide loading indicator if it's still visible
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+            loadingIndicator.classList.add('hidden');
+        }
     }
 }
 
@@ -124,62 +153,6 @@ function setupButtonListeners() {
     } catch (e) {
         console.error("Error setting up button listeners:", e);
     }
-}
-
-// Fallback implementation using localStorage if Firebase fails to initialize
-function createLocalStorageDb() {
-    console.warn("Creating localStorage fallback database");
-    
-    return {
-        collection: function(collectionName) {
-            return {
-                doc: function(docId) {
-                    return {
-                        set: function(data) {
-                            return new Promise((resolve, reject) => {
-                                try {
-                                    // Create a key using collection and document ID
-                                    const storageKey = `${collectionName}_${docId}`;
-                                    
-                                    // Store data in localStorage
-                                    localStorage.setItem(storageKey, JSON.stringify(data));
-                                    
-                                    console.log(`Data saved to localStorage with key: ${storageKey}`);
-                                    resolve();
-                                } catch (error) {
-                                    console.error("Error saving to localStorage:", error);
-                                    reject(error);
-                                }
-                            });
-                        },
-                        get: function() {
-                            return new Promise((resolve, reject) => {
-                                try {
-                                    const storageKey = `${collectionName}_${docId}`;
-                                    const data = localStorage.getItem(storageKey);
-                                    
-                                    if (data) {
-                                        resolve({
-                                            exists: true,
-                                            data: function() {
-                                                return JSON.parse(data);
-                                            }
-                                        });
-                                    } else {
-                                        resolve({
-                                            exists: false
-                                        });
-                                    }
-                                } catch (error) {
-                                    reject(error);
-                                }
-                            });
-                        }
-                    };
-                }
-            };
-        }
-    };
 }
 
 // ============== Writing Area Functionality ==============
