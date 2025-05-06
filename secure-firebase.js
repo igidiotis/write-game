@@ -1,27 +1,19 @@
-// Firebase Configuration and Setup - Secure Version
+// Firebase Configuration and Setup
 
-// Get Firebase config from environment variables
-// In production, these are set in Vercel
-// For local development, create a .env file (add to .gitignore!)
+// Firebase configuration object
+// Replace these values with your actual Firebase project config from Firebase Console
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY || "",
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
-    projectId: process.env.FIREBASE_PROJECT_ID || "",
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "",
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
-    appId: process.env.FIREBASE_APP_ID || ""
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
 // Set to true to force using localStorage instead of Firebase
 // Set this to true if you're having issues with Firebase
-const forceLocalStorage = false;
-
-// If any config values are missing, default to localStorage
-const isConfigValid = Object.values(firebaseConfig).every(value => value !== "");
-if (!isConfigValid) {
-    console.warn("Firebase config is incomplete, using localStorage fallback");
-    forceLocalStorage = true;
-}
+let forceLocalStorage = false;
 
 // Initialize Firebase
 let db;
@@ -54,6 +46,12 @@ try {
         if (!isConnected) {
             console.warn("Firebase connection test failed, using localStorage fallback");
             db = createLocalStorageDb();
+            
+            // Hide loading indicator if it's showing
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+                loadingIndicator.classList.add('hidden');
+            }
         }
     });
 } catch (error) {
@@ -152,5 +150,14 @@ function testFirebaseConnection() {
     });
 }
 
-// Add the fallback db to the window for access from script.js if needed
+// Make createLocalStorageDb available globally for script.js
 window.createLocalStorageDb = createLocalStorageDb;
+
+// Force hide loading indicator after 8 seconds to prevent infinite loading
+setTimeout(() => {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator && !loadingIndicator.classList.contains('hidden')) {
+        console.warn("Force hiding loading indicator after timeout");
+        loadingIndicator.classList.add('hidden');
+    }
+}, 8000);
